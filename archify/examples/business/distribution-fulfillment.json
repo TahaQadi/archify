@@ -1,0 +1,608 @@
+{
+  "version": 1,
+  "id": "distribution-operations-pilot",
+  "title": "Wholesale distribution · Fulfillment operating model (illustrative pilot)",
+  "locale": "en",
+  "description": "Illustrative future-state design. Ownership, controls, role permissions and approval thresholds require management sign-off.",
+  "status": "proposed",
+  "valueProposition": "Supply professional consumables reliably from customer request through picking, delivery and proof of receipt.",
+  "entities": {
+    "people": [
+      {
+        "id": "warehouse_lead",
+        "name": "Warehouse manager (sample user)",
+        "status": "proposed"
+      }
+    ],
+    "roles": [
+      {
+        "id": "sales",
+        "name": "Sales / Account Management",
+        "status": "proposed"
+      },
+      {
+        "id": "warehouse",
+        "name": "Warehouse & Logistics Manager",
+        "status": "proposed"
+      },
+      {
+        "id": "picker",
+        "name": "Warehouse Picker",
+        "status": "proposed"
+      },
+      {
+        "id": "finance",
+        "name": "Finance / Release Control",
+        "status": "proposed"
+      },
+      {
+        "id": "driver",
+        "name": "Delivery Driver",
+        "status": "proposed"
+      }
+    ],
+    "units": [
+      {
+        "id": "operations",
+        "name": "Operations",
+        "status": "proposed"
+      },
+      {
+        "id": "commercial",
+        "name": "Commercial",
+        "status": "proposed"
+      }
+    ],
+    "locations": [
+      {
+        "id": "main_wh",
+        "name": "Main warehouse",
+        "status": "proposed"
+      },
+      {
+        "id": "customer",
+        "name": "Customer delivery site",
+        "status": "proposed"
+      }
+    ],
+    "systems": [
+      {
+        "id": "erpnext",
+        "name": "ERPNext (planned)",
+        "status": "proposed"
+      },
+      {
+        "id": "messaging",
+        "name": "Internal messaging (candidate)",
+        "status": "proposed"
+      }
+    ],
+    "suppliers": [
+      {
+        "id": "vendors",
+        "name": "Approved consumables suppliers",
+        "status": "proposed"
+      }
+    ],
+    "information": [
+      {
+        "id": "request",
+        "name": "Customer request",
+        "status": "proposed"
+      },
+      {
+        "id": "stock",
+        "name": "Stock availability",
+        "status": "proposed"
+      },
+      {
+        "id": "picklist",
+        "name": "Pick list",
+        "status": "proposed"
+      },
+      {
+        "id": "delivery",
+        "name": "Delivery note",
+        "status": "proposed"
+      },
+      {
+        "id": "proof",
+        "name": "Proof of delivery",
+        "status": "proposed"
+      }
+    ],
+    "managementSystems": [
+      {
+        "id": "daily_ops",
+        "name": "Daily operations review",
+        "status": "proposed"
+      },
+      {
+        "id": "exception",
+        "name": "Shortage and escalation review",
+        "status": "proposed"
+      }
+    ],
+    "capabilities": [
+      {
+        "id": "fulfillment",
+        "name": "Order fulfillment",
+        "status": "proposed"
+      }
+    ]
+  },
+  "assignments": [
+    {
+      "person": "warehouse_lead",
+      "role": "warehouse",
+      "unit": "operations",
+      "location": "main_wh",
+      "status": "proposed"
+    }
+  ],
+  "permissions": [
+    {
+      "id": "order_read",
+      "role": "sales",
+      "system": "erpnext",
+      "resource": "Sales Order",
+      "actions": [
+        "read",
+        "create"
+      ],
+      "scope": "Own customers",
+      "status": "proposed"
+    },
+    {
+      "id": "stock_read",
+      "role": "warehouse",
+      "system": "erpnext",
+      "resource": "Stock Ledger / Inventory",
+      "actions": [
+        "read"
+      ],
+      "scope": "Assigned warehouse",
+      "status": "proposed"
+    },
+    {
+      "id": "stock_request",
+      "role": "warehouse",
+      "system": "erpnext",
+      "resource": "Material Request",
+      "actions": [
+        "create"
+      ],
+      "scope": "Assigned warehouse",
+      "status": "proposed"
+    },
+    {
+      "id": "pick_execute",
+      "role": "picker",
+      "system": "erpnext",
+      "resource": "Pick List",
+      "actions": [
+        "read",
+        "update"
+      ],
+      "scope": "Assigned pick list",
+      "status": "proposed"
+    },
+    {
+      "id": "pick_verify",
+      "role": "warehouse",
+      "system": "erpnext",
+      "resource": "Pick List",
+      "actions": [
+        "read",
+        "submit"
+      ],
+      "scope": "Assigned warehouse",
+      "status": "proposed"
+    },
+    {
+      "id": "release_order",
+      "role": "finance",
+      "system": "erpnext",
+      "resource": "Delivery Note",
+      "actions": [
+        "read",
+        "approve"
+      ],
+      "scope": "Company",
+      "requiresApproval": false,
+      "status": "client-decision"
+    },
+    {
+      "id": "delivery_update",
+      "role": "driver",
+      "system": "erpnext",
+      "resource": "Delivery Note",
+      "actions": [
+        "read",
+        "update"
+      ],
+      "scope": "Assigned delivery",
+      "status": "proposed"
+    },
+    {
+      "id": "closure",
+      "role": "sales",
+      "system": "erpnext",
+      "resource": "Sales Order",
+      "actions": [
+        "read",
+        "update"
+      ],
+      "scope": "Own customers",
+      "status": "proposed"
+    }
+  ],
+  "controls": [
+    {
+      "id": "verify_pick",
+      "name": "Independent pick verification",
+      "ownerRole": "warehouse",
+      "appliesTo": [
+        "order_to_delivery.verify"
+      ],
+      "evidence": "Picker and verifier identity with timestamps",
+      "status": "proposed"
+    },
+    {
+      "id": "porelease",
+      "name": "Release before dispatch",
+      "ownerRole": "finance",
+      "appliesTo": [
+        "order_to_delivery.release"
+      ],
+      "evidence": "Recorded approval or documented exception",
+      "status": "client-decision"
+    }
+  ],
+  "processes": [
+    {
+      "id": "order_to_delivery",
+      "name": "Customer order → proof of delivery",
+      "capability": "fulfillment",
+      "ownerRole": "warehouse",
+      "status": "proposed",
+      "phases": [
+        {
+          "id": "intake",
+          "name": "Request"
+        },
+        {
+          "id": "allocate",
+          "name": "Allocation"
+        },
+        {
+          "id": "picking",
+          "name": "Picking"
+        },
+        {
+          "id": "check",
+          "name": "Verification"
+        },
+        {
+          "id": "dispatch",
+          "name": "Dispatch"
+        },
+        {
+          "id": "complete",
+          "name": "Completion"
+        }
+      ],
+      "steps": [
+        {
+          "id": "capture",
+          "name": "Record customer request",
+          "phase": "intake",
+          "role": "sales",
+          "system": "erpnext",
+          "inputs": [
+            "request"
+          ],
+          "outputs": [],
+          "permissions": [
+            "order_read"
+          ],
+          "status": "proposed"
+        },
+        {
+          "id": "allocate",
+          "name": "Check and allocate stock",
+          "phase": "allocate",
+          "role": "warehouse",
+          "location": "main_wh",
+          "system": "erpnext",
+          "inputs": [
+            "stock"
+          ],
+          "permissions": [
+            "stock_read"
+          ],
+          "status": "proposed"
+        },
+        {
+          "id": "shortage",
+          "name": "Request replenishment",
+          "phase": "allocate",
+          "role": "warehouse",
+          "location": "main_wh",
+          "system": "erpnext",
+          "kind": "decision",
+          "permissions": [
+            "stock_request"
+          ],
+          "status": "proposed"
+        },
+        {
+          "id": "pick",
+          "name": "Pick ordered items",
+          "phase": "picking",
+          "role": "picker",
+          "location": "main_wh",
+          "system": "erpnext",
+          "outputs": [
+            "picklist"
+          ],
+          "permissions": [
+            "pick_execute"
+          ],
+          "status": "proposed"
+        },
+        {
+          "id": "verify",
+          "name": "Verify quantities and items",
+          "phase": "check",
+          "role": "warehouse",
+          "location": "main_wh",
+          "system": "erpnext",
+          "inputs": [
+            "picklist"
+          ],
+          "controls": [
+            "verify_pick"
+          ],
+          "permissions": [
+            "pick_verify"
+          ],
+          "status": "proposed"
+        },
+        {
+          "id": "release",
+          "name": "Approve release to dispatch",
+          "phase": "dispatch",
+          "role": "finance",
+          "system": "erpnext",
+          "kind": "decision",
+          "outputs": [
+            "delivery"
+          ],
+          "controls": [
+            "porelease"
+          ],
+          "permissions": [
+            "release_order"
+          ],
+          "status": "client-decision"
+        },
+        {
+          "id": "deliver",
+          "name": "Deliver and capture receipt",
+          "phase": "dispatch",
+          "role": "driver",
+          "location": "customer",
+          "system": "erpnext",
+          "inputs": [
+            "delivery"
+          ],
+          "outputs": [
+            "proof"
+          ],
+          "permissions": [
+            "delivery_update"
+          ],
+          "status": "proposed"
+        },
+        {
+          "id": "close",
+          "name": "Close delivery loop",
+          "phase": "complete",
+          "role": "sales",
+          "system": "erpnext",
+          "inputs": [
+            "proof"
+          ],
+          "permissions": [
+            "closure"
+          ],
+          "status": "proposed"
+        }
+      ],
+      "flows": [
+        {
+          "from": "capture",
+          "to": "allocate"
+        },
+        {
+          "from": "allocate",
+          "to": "pick",
+          "condition": "Stock available"
+        },
+        {
+          "from": "allocate",
+          "to": "shortage",
+          "kind": "exception",
+          "condition": "Shortage"
+        },
+        {
+          "from": "shortage",
+          "to": "allocate",
+          "kind": "branch",
+          "condition": "After replenishment"
+        },
+        {
+          "from": "pick",
+          "to": "verify"
+        },
+        {
+          "from": "verify",
+          "to": "release"
+        },
+        {
+          "from": "release",
+          "to": "deliver"
+        },
+        {
+          "from": "deliver",
+          "to": "close"
+        }
+      ],
+      "mainPath": [
+        "capture",
+        "allocate",
+        "pick",
+        "verify",
+        "release",
+        "deliver",
+        "close"
+      ],
+      "raci": [
+        {
+          "step": "capture",
+          "accountable": "sales",
+          "responsible": [
+            "sales"
+          ],
+          "consulted": [
+            "warehouse"
+          ],
+          "informed": []
+        },
+        {
+          "step": "allocate",
+          "accountable": "warehouse",
+          "responsible": [
+            "warehouse"
+          ],
+          "consulted": [],
+          "informed": [
+            "sales"
+          ]
+        },
+        {
+          "step": "shortage",
+          "accountable": "warehouse",
+          "responsible": [
+            "warehouse"
+          ],
+          "consulted": [
+            "sales"
+          ],
+          "informed": []
+        },
+        {
+          "step": "pick",
+          "accountable": "warehouse",
+          "responsible": [
+            "picker"
+          ],
+          "consulted": [],
+          "informed": []
+        },
+        {
+          "step": "verify",
+          "accountable": "warehouse",
+          "responsible": [
+            "warehouse"
+          ],
+          "consulted": [],
+          "informed": [
+            "sales"
+          ]
+        },
+        {
+          "step": "release",
+          "accountable": "finance",
+          "responsible": [
+            "finance"
+          ],
+          "consulted": [
+            "warehouse"
+          ],
+          "informed": [
+            "driver"
+          ]
+        },
+        {
+          "step": "deliver",
+          "accountable": "warehouse",
+          "responsible": [
+            "driver"
+          ],
+          "consulted": [],
+          "informed": [
+            "sales"
+          ]
+        },
+        {
+          "step": "close",
+          "accountable": "sales",
+          "responsible": [
+            "sales"
+          ],
+          "consulted": [],
+          "informed": [
+            "warehouse"
+          ]
+        }
+      ]
+    }
+  ],
+  "decisions": [
+    {
+      "id": "delivery_release",
+      "name": "Approve dispatch",
+      "process": "order_to_delivery",
+      "proposerRole": "warehouse",
+      "approverRole": "finance",
+      "backupRole": "warehouse",
+      "rule": "Approval thresholds and fallback require management decision",
+      "status": "client-decision"
+    }
+  ],
+  "metrics": [
+    {
+      "id": "fulfillment_accuracy",
+      "name": "Pick accuracy",
+      "process": "order_to_delivery",
+      "ownerRole": "warehouse",
+      "definition": "Deliveries without item or quantity correction / total deliveries",
+      "target": "To be agreed",
+      "status": "proposed"
+    }
+  ],
+  "risks": [
+    {
+      "id": "dispatch_mismatch",
+      "name": "Dispatched items differ from customer request",
+      "process": "order_to_delivery",
+      "ownerRole": "warehouse",
+      "likelihood": "unknown",
+      "impact": "customer credit or redelivery",
+      "treatment": "Independent pick verification and delivery variance logging",
+      "status": "proposed"
+    }
+  ],
+  "requirements": [
+    {
+      "id": "REQ-001",
+      "description": "Pickers should operate within their assigned warehouse and receive only assigned pick lists",
+      "process": "order_to_delivery",
+      "ownerRole": "warehouse",
+      "acceptanceCriteria": "A user assigned to warehouse A cannot update a pick list assigned to warehouse B in staging",
+      "status": "client-decision"
+    }
+  ]
+}

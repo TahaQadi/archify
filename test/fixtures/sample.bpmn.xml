@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" targetNamespace="http://example.org/bpmn/test">
+<collaboration id="collab"><participant id="part1" name="Warehouse" processRef="main"/></collaboration>
+<process id="main" name="Example fulfillment" isExecutable="false"><laneSet id="ls"><lane id="operations" name="Operations"><flowNodeRef>start</flowNodeRef><flowNodeRef>user</flowNodeRef><flowNodeRef>choice</flowNodeRef><flowNodeRef>done</flowNodeRef></lane><lane id="erp" name="ERPNext"><flowNodeRef>service</flowNodeRef></lane></laneSet>
+<startEvent id="start" name="Start"><outgoing>f1</outgoing></startEvent>
+<userTask id="user" name="Pick items"><incoming>f1</incoming><outgoing>f2</outgoing></userTask><boundaryEvent id="interrupt" attachedToRef="user"><timerEventDefinition/></boundaryEvent>
+<exclusiveGateway id="choice" name="Stock ready?"><incoming>f2</incoming><outgoing>f3</outgoing><outgoing>f4</outgoing></exclusiveGateway>
+<serviceTask id="service" name="Post stock"><incoming>f3</incoming><outgoing>f5</outgoing></serviceTask>
+<endEvent id="done" name="Finish"><incoming>f5</incoming><incoming>f4</incoming></endEvent>
+<sequenceFlow id="f1" sourceRef="start" targetRef="user"/><sequenceFlow id="f2" sourceRef="user" targetRef="choice"/><sequenceFlow id="f3" sourceRef="choice" targetRef="service"/><sequenceFlow id="f4" sourceRef="choice" targetRef="done"/><sequenceFlow id="f5" sourceRef="service" targetRef="done"/>
+</process>
+<bpmndi:BPMNDiagram id="bd"><bpmndi:BPMNPlane id="plane" bpmnElement="main"><bpmndi:BPMNShape id="start_di" bpmnElement="start"><dc:Bounds x="90" y="90" width="36" height="36"/></bpmndi:BPMNShape><bpmndi:BPMNShape id="user_di" bpmnElement="user"><dc:Bounds x="180" y="75" width="140" height="65"/></bpmndi:BPMNShape><bpmndi:BPMNShape id="choice_di" bpmnElement="choice"><dc:Bounds x="370" y="83" width="55" height="55"/></bpmndi:BPMNShape><bpmndi:BPMNShape id="service_di" bpmnElement="service"><dc:Bounds x="480" y="225" width="140" height="70"/></bpmndi:BPMNShape><bpmndi:BPMNShape id="done_di" bpmnElement="done"><dc:Bounds x="680" y="90" width="36" height="36"/></bpmndi:BPMNShape><bpmndi:BPMNEdge id="f1_di" bpmnElement="f1"><di:waypoint x="126" y="108"/><di:waypoint x="180" y="108"/></bpmndi:BPMNEdge></bpmndi:BPMNPlane></bpmndi:BPMNDiagram>
+</definitions>
