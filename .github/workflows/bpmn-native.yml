@@ -1,0 +1,59 @@
+name: Native BPMN renderer
+
+on:
+  push:
+    branches:
+      - feature/business-operating-model-studio
+    paths:
+      - 'archify/renderers/bpmn/**'
+      - 'archify/renderers/shared/cli.mjs'
+      - 'archify/bin/archify.mjs'
+      - 'test/bpmn-native.test.mjs'
+      - 'test/fixtures/sample.bpmn.xml'
+      - '.github/workflows/bpmn-native.yml'
+  pull_request:
+    paths:
+      - 'archify/renderers/bpmn/**'
+      - 'archify/renderers/shared/cli.mjs'
+      - 'archify/bin/archify.mjs'
+      - 'test/bpmn-native.test.mjs'
+      - 'test/fixtures/sample.bpmn.xml'
+      - '.github/workflows/bpmn-native.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  bpmn:
+    name: Import, shapes, and native viewer smoke test
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            archify
+            viewer
+            scripts
+            test
+            package.json
+          sparse-checkout-cone-mode: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Run BPMN import and shape tests
+        run: node --test test/bpmn-native.test.mjs
+      - name: Import synthetic BPMN fixture
+        run: |
+          python3 archify/renderers/bpmn/import-bpmn.py test/fixtures/sample.bpmn.xml /tmp/archify-bpmn-views
+          test -f /tmp/archify-bpmn-views/sample_bpmn-main.bpmn.json
+      - name: Render with Archify's native CLI
+        run: |
+          node archify/bin/archify.mjs render bpmn /tmp/archify-bpmn-views/sample_bpmn-main.bpmn.json /tmp/archify-bpmn-smoke.html
+          test -s /tmp/archify-bpmn-smoke.html
+          grep -q 'data-node-id="start"' /tmp/archify-bpmn-smoke.html
+          grep -q 'data-edge-key="f1"' /tmp/archify-bpmn-smoke.html
+          grep -q 'archify-diagram-title' /tmp/archify-bpmn-smoke.html
+      - name: Validate rendered artifact
+        run: |
+          node archify/scripts/check-render-output.mjs /tmp/archify-bpmn-smoke.html
