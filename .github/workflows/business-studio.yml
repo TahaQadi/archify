@@ -1,0 +1,53 @@
+name: Business Studio integration
+
+on:
+  push:
+    branches:
+      - feature/native-business-studio-editor
+  pull_request:
+    paths:
+      - 'archify/business/**'
+      - 'archify/examples/business/**'
+      - 'test/business-*.test.mjs'
+      - '.github/workflows/business-studio.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  business-studio:
+    name: Native renderer and editor (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['22', '24']
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Validate source, editor embedding, and real native renderer
+        run: node --test test/business-model.test.mjs test/business-studio.test.mjs test/business-studio-integration.test.mjs
+      - name: Build a complete editable Archify business workflow
+        run: |
+          node archify/business/cli.mjs build archify/examples/business/distribution-fulfillment.json "$RUNNER_TEMP/business-studio" --studio
+          test -s "$RUNNER_TEMP/business-studio/order_to_delivery.html"
+          grep -q 'business-studio-runtime' "$RUNNER_TEMP/business-studio/order_to_delivery.html"
+          grep -q 'data-node-id="capture"' "$RUNNER_TEMP/business-studio/order_to_delivery.html"
+          test -s "$RUNNER_TEMP/business-studio/business-operating-model.html"
+      - name: Prepare Chrome
+        if: matrix.node == '22'
+        id: setup-chrome
+        uses: browser-actions/setup-chrome@48ad923757ca74d66703209fe939badbdf80f2f4 # v2.2.0
+        with:
+          chrome-version: stable
+          install-dependencies: true
+      - name: Check the compiled interactive HTML in real Chrome
+        if: matrix.node == '22'
+        run: node archify/bin/archify.mjs browser-check "$RUNNER_TEMP/business-studio/order_to_delivery.html" --json
+        env:
+          ARCHIFY_CHROME: ${{ steps.setup-chrome.outputs.chrome-path }}
+          ARCHIFY_CHROME_NO_SANDBOX: '1'
