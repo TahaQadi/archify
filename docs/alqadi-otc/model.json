@@ -1,0 +1,662 @@
+{
+  "steps": [
+    {
+      "id": "intake",
+      "title": "استلام طلب العميل",
+      "stage": "الطلب",
+      "lane": "sales",
+      "dt": "Communication / Opportunity",
+      "desc": "تسجيل طلب عميل أو قائمة أصناف أو عطاء مع الاحتفاظ بالنص الأصلي والموعد والقناة.",
+      "fields": [
+        "party_name / Customer (عند التحويل)",
+        "notes / المرفقات"
+      ],
+      "gate": "هل الطلب مكتمل والعميل معروف؟",
+      "exception": "طلب ناقص ← إعادة استيضاح دون اختلاق أصناف.",
+      "owner": "المبيعات — طه",
+      "handoff": "التحقق من العميل",
+      "test": "طلب متعدد الأصناف مع مرفق، وحفظ النسخة الأصلية",
+      "kind": "proposed"
+    },
+    {
+      "id": "customer",
+      "title": "العميل وشروط التعامل",
+      "stage": "الطلب",
+      "lane": "sales",
+      "dt": "Customer · Address · Contact",
+      "desc": "توحيد ملف العميل والعناوين والمستلمين وأوامر الشراء وشروط السداد؛ لا تكرار للعميل.",
+      "fields": [
+        "customer_name",
+        "customer_group",
+        "territory",
+        "payment_terms"
+      ],
+      "gate": "عميل مسجل + عنوان استلام + شروط سداد معتمدة",
+      "exception": "تضارب الاسم/رقم التسجيل ← مراجعة يدوية",
+      "owner": "المبيعات / المالية",
+      "handoff": "التسعير وحدّ الائتمان",
+      "test": "منع إنشاء سجل عميل مكرر والتحقق من صلاحية الوصول",
+      "kind": "native"
+    },
+    {
+      "id": "pricing",
+      "title": "التسعير وفحص الأصناف",
+      "stage": "التسعير",
+      "lane": "sales",
+      "dt": "Item · Item Price · Price List · Item Alternative",
+      "desc": "تحديد الصنف ووحدة القياس والتعبئة والأسعار المعتمدة والبدائل المعروضة دون استبدال طلب العميل بصمت.",
+      "fields": [
+        "item_code",
+        "stock_uom",
+        "price_list_rate",
+        "allow_alternative_item",
+        "alternative_item_code"
+      ],
+      "gate": "سعر ساري + وحدة صحيحة + موافقة العميل على البديل",
+      "exception": "صنف غير موجود ← تعريف صنف؛ بديل ← قبول مكتوب",
+      "owner": "خالد / المبيعات",
+      "handoff": "تحديث الأصناف والشراء",
+      "test": "صنف بديل بموافقة وصنف بديل دون موافقة",
+      "kind": "native"
+    },
+    {
+      "id": "quote",
+      "title": "إصدار عرض السعر",
+      "stage": "التسعير",
+      "lane": "sales",
+      "dt": "Quotation",
+      "desc": "عرض سعر اختياري لكنه ضروري عند المناقصات والمفاوضات؛ الاحتفاظ بمرجع طلب العميل وشروط العرض.",
+      "fields": [
+        "quotation_to",
+        "party_name",
+        "items",
+        "valid_till",
+        "selling_price_list"
+      ],
+      "gate": "اعتماد السعر والخصم قبل الإرسال حسب الصلاحية",
+      "exception": "رفض العميل/انتهاء الصلاحية ← تعديل نسخة أو إغلاق الفرصة",
+      "owner": "المبيعات / خالد",
+      "handoff": "أمر البيع",
+      "test": "عرض صالح/منتهي واختبار خصم خارج الحد",
+      "kind": "native"
+    },
+    {
+      "id": "credit",
+      "title": "بوابة الذمم والائتمان",
+      "stage": "الاعتماد",
+      "lane": "finance",
+      "dt": "Customer Credit Limit · Accounts Settings",
+      "desc": "فحص المديونية وحد العميل؛ تقييد التجاوز بدور مفوض، مع قرار منفصل للمتأخرات.",
+      "fields": [
+        "credit_limit",
+        "bypass_credit_limit_check",
+        "credit_controller"
+      ],
+      "gate": "مسموح بالبيع الآجل أو استثناء موثق بصلاحية",
+      "exception": "تجاوز الحد ← إيقاف وإحالة لمسؤول الائتمان",
+      "owner": "لؤي — المالية",
+      "handoff": "التحصيل والمبيعات",
+      "test": "تجاوز حد ائتمان: مستخدم عادي يُمنع ومفوّض يُختبر",
+      "kind": "source"
+    },
+    {
+      "id": "order",
+      "title": "اعتماد أمر البيع",
+      "stage": "الاعتماد",
+      "lane": "sales",
+      "dt": "Sales Order",
+      "desc": "تثبيت الكميات الأصلية والسعر والعنوان وموعد التسليم؛ الربط بعرض السعر أو دخول مباشر عند البيع المعتاد.",
+      "fields": [
+        "customer",
+        "company",
+        "transaction_date",
+        "delivery_date",
+        "items",
+        "reserve_stock",
+        "set_warehouse"
+      ],
+      "gate": "أمر مؤكد + صلاحيات submit + تدقيق الكميات",
+      "exception": "تعديل بعد الاعتماد ← إلغاء/تعديل وفق صلاحية وسجل أثر",
+      "owner": "المبيعات / خالد",
+      "handoff": "المخزون والتجهيز",
+      "test": "طلب ٤٠ سطراً مع تكرار/نقص وصلاحيات الاعتماد",
+      "kind": "native"
+    },
+    {
+      "id": "availability",
+      "title": "التحقق من المتاح والحجز",
+      "stage": "التجهيز",
+      "lane": "warehouse",
+      "dt": "Bin · Stock Reservation Entry · Stock Settings",
+      "desc": "فحص المتاح حسب المستودع وحجز الكمية عند تفعيل الحجز؛ لا يساوي الحجز صرفاً.",
+      "fields": [
+        "enable_stock_reservation",
+        "allow_partial_reservation",
+        "reserved_qty",
+        "warehouse"
+      ],
+      "gate": "متاح/حجز جزئي/نواقص يجب معالجتها",
+      "exception": "نقص ← شراء أو نقل بين مخازن أو تجزئة بموافقة العميل",
+      "owner": "عصام — المستودعات",
+      "handoff": "المشتريات وتحويل المخزون",
+      "test": "حجز كامل وجزئي ثم التحقق من Bin",
+      "kind": "source"
+    },
+    {
+      "id": "pick",
+      "title": "قائمة التجهيز والفحص",
+      "stage": "التجهيز",
+      "lane": "warehouse",
+      "dt": "Pick List",
+      "desc": "توجيه العامل إلى مواقع الأصناف والكميات والوحدات الصحيحة؛ فحص الكميات والبدائل قبل التسليم.",
+      "fields": [
+        "locations",
+        "item_code",
+        "qty",
+        "warehouse"
+      ],
+      "gate": "تجهيز مطابق مع تسجيل الناقص والتالف",
+      "exception": "موقع خاطئ/كمية ناقصة ← تصحيح لا حذف سطر العميل",
+      "owner": "عصام / المجهزون",
+      "handoff": "التسليم اللوجستي",
+      "test": "سحب من مستودعين مع بند ناقص",
+      "kind": "native"
+    },
+    {
+      "id": "delivery",
+      "title": "سند التسليم",
+      "stage": "التسليم",
+      "lane": "logistics",
+      "dt": "Delivery Note",
+      "desc": "إنشاء سند بالكمية الفعلية من أمر البيع؛ تقديم سند جزئي دون اعتبار كامل الطلب مسلماً.",
+      "fields": [
+        "customer",
+        "items",
+        "against_sales_order",
+        "so_detail",
+        "set_warehouse"
+      ],
+      "gate": "تأكيد الكميات المنصرفة والصلاحية ثم submit",
+      "exception": "مرتجع/نقص/تلف ← مستند عودة أو تسليم لاحق",
+      "owner": "عصام / مسؤول الصرف",
+      "handoff": "الفاتورة وحركة المخزون",
+      "test": "مقارنة ordered vs delivered وقيود Stock Ledger",
+      "kind": "source"
+    },
+    {
+      "id": "trip",
+      "title": "رحلة التوزيع وإثبات الاستلام",
+      "stage": "التسليم",
+      "lane": "logistics",
+      "dt": "Delivery Trip · Delivery Stop",
+      "desc": "إسناد السائق والمركبة والمستلمين وربط سندات التسليم؛ إثبات الاستلام أو الفشل بإجراء مستقل.",
+      "fields": [
+        "driver",
+        "vehicle",
+        "departure_time",
+        "delivery_stops",
+        "visited"
+      ],
+      "gate": "مستند استلام/توقيع العميل لا مجرد visited",
+      "exception": "تعذر التسليم ← متابعة عاجلة وإعادة جدولة مع توثيق",
+      "owner": "عصام / السائق",
+      "handoff": "خدمة العملاء + الذمم",
+      "test": "رحلة جزئية وزيارة معلّمة دون توقيع، لا تُعتبر تسليماً ناجحاً",
+      "kind": "source"
+    },
+    {
+      "id": "invoice",
+      "title": "إصدار فاتورة المبيعات",
+      "stage": "الفوترة",
+      "lane": "finance",
+      "dt": "Sales Invoice",
+      "desc": "الفوترة من سند التسليم أو أمر البيع وفق سياسة معتمدة؛ منع صرف المخزون مرتين عند استخدام DN.",
+      "fields": [
+        "customer",
+        "items",
+        "due_date",
+        "debit_to",
+        "update_stock"
+      ],
+      "gate": "مراجعة الضريبة والحسابات وشروط السداد قبل الاعتماد",
+      "exception": "خطأ بعد الاعتماد ← Credit Note/تعديل منضبط",
+      "owner": "فداء — التسجيل / لؤي",
+      "handoff": "دفتر الأستاذ والذمم",
+      "test": "فاتورة مع DN و update_stock=false والتحقق من GL",
+      "kind": "source"
+    },
+    {
+      "id": "collection",
+      "title": "متابعة الذمم والتحصيل",
+      "stage": "التحصيل",
+      "lane": "finance",
+      "dt": "Payment Entry · Payment Ledger Entry",
+      "desc": "تسوية التحصيل على الفواتير الصحيحة مع متابعة المبالغ المتبقية والتأخير.",
+      "fields": [
+        "payment_type",
+        "party",
+        "paid_amount",
+        "received_amount",
+        "references",
+        "unallocated_amount"
+      ],
+      "gate": "تحصيل مؤكد + تخصيص صحيح للفواتير",
+      "exception": "دفعة ناقصة/مرتجعة/غير مخصصة ← معالجة ومطابقة",
+      "owner": "لؤي / فداء",
+      "handoff": "كشف العميل والبنك",
+      "test": "دفعة جزئية ومزدوجة وغير مخصصة وتحقق من GL",
+      "kind": "native"
+    },
+    {
+      "id": "reconcile",
+      "title": "المطابقة وإغلاق الدورة",
+      "stage": "التحصيل",
+      "lane": "finance",
+      "dt": "Payment Reconciliation · Bank Transaction",
+      "desc": "مطابقة المقبوضات بالبنك والفواتير والتحقق من الذمم المتبقية؛ تقارير أعمار الديون.",
+      "fields": [
+        "bank_account",
+        "references",
+        "allocated_amount"
+      ],
+      "gate": "مطابقة رصيد العميل والبنك ودفتر الأستاذ",
+      "exception": "فرق ← سند تصحيح موثق ومراجعة مالية",
+      "owner": "لؤي",
+      "handoff": "تقارير الإدارة والعميل",
+      "test": "تطابق الإجماليات وإعادة تشغيل المطابقة بلا تكرار",
+      "kind": "native"
+    }
+  ],
+  "lanes": [
+    {
+      "id": "sales",
+      "name": "المبيعات وخدمة العملاء",
+      "color": "#247f89"
+    },
+    {
+      "id": "finance",
+      "name": "المالية والاعتماد والتحصيل",
+      "color": "#6f60aa"
+    },
+    {
+      "id": "warehouse",
+      "name": "المستودعات والتجهيز",
+      "color": "#b77932"
+    },
+    {
+      "id": "logistics",
+      "name": "التوزيع والاستلام",
+      "color": "#308762"
+    }
+  ],
+  "phases": [
+    "الطلب",
+    "التسعير",
+    "الاعتماد",
+    "التجهيز",
+    "التسليم",
+    "الفوترة",
+    "التحصيل"
+  ],
+  "links": [
+    [
+      "intake",
+      "customer",
+      "تدقيق العميل"
+    ],
+    [
+      "customer",
+      "pricing",
+      "طلب مكتمل"
+    ],
+    [
+      "pricing",
+      "quote",
+      "السعر"
+    ],
+    [
+      "quote",
+      "credit",
+      "موافقة"
+    ],
+    [
+      "credit",
+      "order",
+      "أذن بيع"
+    ],
+    [
+      "order",
+      "availability",
+      "كميات"
+    ],
+    [
+      "availability",
+      "pick",
+      "حجز/متاح"
+    ],
+    [
+      "pick",
+      "delivery",
+      "تجهيز"
+    ],
+    [
+      "delivery",
+      "trip",
+      "صرف"
+    ],
+    [
+      "trip",
+      "invoice",
+      "إثبات"
+    ],
+    [
+      "invoice",
+      "collection",
+      "استحقاق"
+    ],
+    [
+      "collection",
+      "reconcile",
+      "مطابقة"
+    ]
+  ],
+  "dependencies": [
+    {
+      "id": "dep_items",
+      "name": "البيانات الرئيسية والتسعير",
+      "system": "Item / Price List / Item Alternative",
+      "fromStep": "pricing",
+      "to": "الشراء والتعريف",
+      "status": "إعداد أصلي",
+      "note": "صنف جديد أو بديل يتطلب تعريفاً صحيحاً وقرار العميل، لا تحويل صامت للأصناف."
+    },
+    {
+      "id": "dep_buy",
+      "name": "المشتريات وتغطية النقص",
+      "system": "Material Request → Purchase Order → Purchase Receipt",
+      "fromStep": "availability",
+      "to": "الشراء",
+      "status": "مسار مرتبط مشروط",
+      "note": "الطلب الناقص يُحال للمشتريات أو النقل؛ لا نفترض إنشاء أمر شراء آلياً."
+    },
+    {
+      "id": "dep_stock",
+      "name": "نقل المخزون بين المستودعات",
+      "system": "Stock Entry",
+      "fromStep": "availability",
+      "to": "المخزون",
+      "status": "مسار مرتبط مشروط",
+      "note": "نقل من مستودع آخر يتطلب سند نقل فعلي قبل الصرف."
+    },
+    {
+      "id": "dep_help",
+      "name": "تعثر التوصيل وخدمة العملاء",
+      "system": "Delivery Note / HD Ticket",
+      "fromStep": "trip",
+      "to": "Helpdesk",
+      "status": "تكامل مقترح غير مفعل",
+      "note": "تذكرة الفشل ليست أتمتة متحققة؛ يلزم تصميم حدث ومفتاح منع التكرار."
+    },
+    {
+      "id": "dep_raven",
+      "name": "تنبيهات المستودع والتوزيع",
+      "system": "Raven",
+      "fromStep": "pick",
+      "to": "Raven",
+      "status": "تكامل مقترح غير مفعل",
+      "note": "تعيين القنوات والأدوار وسياسة فشل الإرسال قبل أي ربط."
+    },
+    {
+      "id": "dep_ar",
+      "name": "المحاسبة والذمم والتحصيل",
+      "system": "Sales Invoice → GL / Payment Entry → Payment Ledger",
+      "fromStep": "invoice",
+      "to": "المالية",
+      "status": "قدرة أصلية مشروطة",
+      "note": "الترحيل بعد submit ووفق الإعدادات والبيانات الصحيحة؛ ليس كل مسار حركة مخزون."
+    },
+    {
+      "id": "dep_crm",
+      "name": "إحالة CRM إلى عرض السعر",
+      "system": "CRM Deal → Quotation",
+      "fromStep": "quote",
+      "to": "CRM",
+      "status": "تكامل اختياري يحتاج تحقق",
+      "note": "رابط تهيئة عرض جديد ليس اعتماداً تلقائياً؛ اختبر الصلاحيات وسلامة المطابقة."
+    },
+    {
+      "id": "dep_return",
+      "name": "المرتجعات والإشعارات الدائنة",
+      "system": "Delivery Note Return / Sales Invoice Return",
+      "fromStep": "delivery",
+      "to": "المخزون والمالية",
+      "status": "مسار استثناء",
+      "note": "مستند عودة منفصل وربط بالفاتورة وإعادة احتساب الالتزام."
+    }
+  ],
+  "checklist": [
+    {
+      "id": "S01",
+      "title": "الشركة وشجرة الحسابات والفروع والمستودعات",
+      "owner": "لؤي",
+      "step": "customer",
+      "evidence": "تأكيد Company وCOA والعملات ومراكز التكلفة ومستودعات المواقع الثلاثة"
+    },
+    {
+      "id": "S02",
+      "title": "تعريف أدوار المبيعات والمالية والمستودع والسائقين",
+      "owner": "المدير / لؤي",
+      "step": "customer",
+      "evidence": "Role Permission Manager + User Permissions واختبار المنع من API"
+    },
+    {
+      "id": "S03",
+      "title": "تنظيف العملاء والعناوين والمستلمين وشروط الدفع",
+      "owner": "المبيعات / فداء",
+      "step": "customer",
+      "evidence": "عينة بيانات عميل ومراجع إدخال دون ازدواجية"
+    },
+    {
+      "id": "S04",
+      "title": "تصنيف الأصناف والوحدات والعبوات والتحويلات",
+      "owner": "خالد / عصام",
+      "step": "pricing",
+      "evidence": "Item / UOM / UOM Conversion Detail"
+    },
+    {
+      "id": "S05",
+      "title": "قوائم الأسعار وفترات الصلاحية والخصومات",
+      "owner": "خالد",
+      "step": "pricing",
+      "evidence": "Item Price / Price List وسياسة مراجعة التغيير"
+    },
+    {
+      "id": "S06",
+      "title": "تعريف البدائل وسياسة موافقة العميل",
+      "owner": "خالد / طه",
+      "step": "pricing",
+      "evidence": "Item Alternative والاحتفاظ بالسطر المطلوب الأصلي"
+    },
+    {
+      "id": "S07",
+      "title": "عرض السعر وربط العطاء والمرجع والصلاحية",
+      "owner": "المبيعات",
+      "step": "quote",
+      "evidence": "Quotation + النموذج الطباعي العربي"
+    },
+    {
+      "id": "S08",
+      "title": "حدود الائتمان والدور الاستثنائي والمتأخرات",
+      "owner": "لؤي",
+      "step": "credit",
+      "evidence": "Customer Credit Limit / Accounts Settings.credit_controller"
+    },
+    {
+      "id": "S09",
+      "title": "صلاحيات إنشاء/اعتماد وإلغاء أمر البيع",
+      "owner": "خالد / لؤي",
+      "step": "order",
+      "evidence": "Sales Order workflow مع docstatus واختبار الأدوار"
+    },
+    {
+      "id": "S10",
+      "title": "المستودعات والحجز وإعداد السماح بالجزئي",
+      "owner": "عصام",
+      "step": "availability",
+      "evidence": "Stock Settings enable_stock_reservation / allow_partial_reservation"
+    },
+    {
+      "id": "S11",
+      "title": "سياسة العجز: شراء أو نقل أو تسليم جزئي",
+      "owner": "خالد / عصام",
+      "step": "availability",
+      "evidence": "قرار موثق لكل بند ونقطة موافقة العميل"
+    },
+    {
+      "id": "S12",
+      "title": "إعداد قائمة التجهيز ومراقبة الكميات",
+      "owner": "عصام",
+      "step": "pick",
+      "evidence": "Pick List وعامل التجهيز والاستلام"
+    },
+    {
+      "id": "S13",
+      "title": "سند التسليم والمطابقة والمرتجعات",
+      "owner": "عصام / فداء",
+      "step": "delivery",
+      "evidence": "Delivery Note وتعريف قبول التسليم الجزئي"
+    },
+    {
+      "id": "S14",
+      "title": "السائق والمركبة والرحلة والعناوين",
+      "owner": "عصام",
+      "step": "trip",
+      "evidence": "Delivery Trip / Delivery Stop"
+    },
+    {
+      "id": "S15",
+      "title": "إثبات الاستلام والتعثر وإعادة التسليم",
+      "owner": "عصام / طه",
+      "step": "trip",
+      "evidence": "دليل استلام مستقل + سياسة فشل واضحة"
+    },
+    {
+      "id": "S16",
+      "title": "سياسة الفوترة وتوقيت الصرف وتجنّب التكرار",
+      "owner": "لؤي",
+      "step": "invoice",
+      "evidence": "Sales Invoice.update_stock والفوترة من DN"
+    },
+    {
+      "id": "S17",
+      "title": "الضرائب وشروط السداد ونموذج الفاتورة",
+      "owner": "لؤي / فداء",
+      "step": "invoice",
+      "evidence": "ضبط الشركة بحسب السياسة القانونية المعتمدة دون افتراض نسبة"
+    },
+    {
+      "id": "S18",
+      "title": "التحصيل والتخصيص والدفعات الجزئية",
+      "owner": "لؤي / فداء",
+      "step": "collection",
+      "evidence": "Payment Entry.references والرصيد المتبقي"
+    },
+    {
+      "id": "S19",
+      "title": "مطابقة البنك والذمم والتقارير",
+      "owner": "لؤي",
+      "step": "reconcile",
+      "evidence": "Bank Transaction / Payment Reconciliation / AR Aging"
+    },
+    {
+      "id": "S20",
+      "title": "اختبار طلب كامل من ٤٠ سطراً وحالات الاستثناء",
+      "owner": "قائد التنفيذ",
+      "step": "order",
+      "evidence": "UAT طلب كامل، بديل، نقص، فشل، مرتجع، تحصيل جزئي"
+    },
+    {
+      "id": "S21",
+      "title": "اختبار الصلاحيات والواجهات وAPI",
+      "owner": "قائد التنفيذ",
+      "step": "credit",
+      "evidence": "مستخدم بلا صلاحية، submit/cancel/override ومعلومات حساسة"
+    },
+    {
+      "id": "S22",
+      "title": "موازنة المخزون وGL والمستندات والتوقيع",
+      "owner": "لؤي / عصام",
+      "step": "reconcile",
+      "evidence": "إثباتات محددة تشمل مستندات التسليم وقيد الحساب"
+    },
+    {
+      "id": "S23",
+      "title": "اعتماد الأعمال والتدريب والتدرج في الإطلاق",
+      "owner": "الحاج محمود / خالد",
+      "step": "reconcile",
+      "evidence": "محضر قبول نهائي بعد Configured→Tested→Accepted"
+    }
+  ],
+  "tests": [
+    {
+      "id": "T01",
+      "title": "الطلب المعتاد",
+      "scenario": "إنشاء عميل/سعر/طلب/تجهيز/سند/فاتورة/تحصيل/مطابقة",
+      "expected": "يجب ربط المستندات وإقفال الذمم دون فقد أي سطر"
+    },
+    {
+      "id": "T02",
+      "title": "اعتماد وائتمان",
+      "scenario": "طلب يتجاوز السقف من مستخدم عادي ثم حساب مفوض",
+      "expected": "المنع في الحالة الأولى، ووجود تفويض يمكن تدقيقه"
+    },
+    {
+      "id": "T03",
+      "title": "نقص وتسليم جزئي",
+      "scenario": "طلب ٤٠ سطراً منها بند ناقص وتسليم أول ثم ثان",
+      "expected": "بقاء الطلب الأصلي وبيان الكميات المفتوحة بدقة"
+    },
+    {
+      "id": "T04",
+      "title": "بديل دون موافقة",
+      "scenario": "محاولة تبديل Item دون موافقة العميل",
+      "expected": "منع الإجراء تشغيلياً وعدم ضياع السطر الأصلي"
+    },
+    {
+      "id": "T05",
+      "title": "تعثر رحلة",
+      "scenario": "visited=true بلا توقيع أو إثبات استلام",
+      "expected": "لا تعتبر مكتملة تجارياً تلقائياً"
+    },
+    {
+      "id": "T06",
+      "title": "عدم تكرار الحركة",
+      "scenario": "إنشاء DN ثم SI مع تحديث المخزون مفعّل خطأ",
+      "expected": "ضبط المسار بحيث لا يحدث صرف مزدوج"
+    },
+    {
+      "id": "T07",
+      "title": "المرتجع",
+      "scenario": "بضاعة راجعة بعد الفوترة",
+      "expected": "تحديث المخزون والذمم عبر مستندات مرتبطة"
+    },
+    {
+      "id": "T08",
+      "title": "التحصيل الجزئي والمكرر",
+      "scenario": "دفعة جزئية ثم إعادة إرسال الدفعة",
+      "expected": "لا ازدواج، ودين متبقٍ صحيح"
+    },
+    {
+      "id": "T09",
+      "title": "صلاحيات مباشرة",
+      "scenario": "استدعاء API للحد الائتماني أو الموافقات من مستخدم غير مفوض",
+      "expected": "منع الوصول في القنوات غير المرئية كذلك"
+    },
+    {
+      "id": "T10",
+      "title": "المطابقة النهائية",
+      "scenario": "مقارنة Sales Order وDN وSI وGL وPayment Entry",
+      "expected": "تسويات مفسرة لكل اختلاف"
+    }
+  ]
+}
