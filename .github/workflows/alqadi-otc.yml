@@ -1,0 +1,44 @@
+name: Al Qadi Order-to-Cash Archify render
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - docs/alqadi-otc/order-to-cash.workflow.json
+      - .github/workflows/alqadi-otc.yml
+
+permissions:
+  contents: write
+
+jobs:
+  build-archify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Render and validate native Archify workflow
+        run: |
+          node archify/bin/archify.mjs finalize workflow docs/alqadi-otc/order-to-cash.workflow.json docs/alqadi-otc/order-to-cash.archify.html --quality standard --json
+      - name: Commit verified native viewer
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/alqadi-otc/order-to-cash.archify.html
+          if ! git diff --cached --quiet; then
+            git commit -m "docs(alqadi): publish validated native Archify O2C viewer"
+            git push
+          fi
+      - name: Preserve native viewer artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: alqadi-otc-archify
+          path: |
+            docs/alqadi-otc/order-to-cash.archify.html
+            docs/alqadi-otc/*.finalize-summary.json
+          if-no-files-found: warn
