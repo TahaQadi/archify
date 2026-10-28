@@ -1,0 +1,324 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "القاضي | من الطلب إلى التحصيل",
+    "locale": "ar",
+    "quality_profile": "standard",
+    "output": "docs/alqadi-otc/order-to-cash.archify.html"
+  },
+  "lanes": [
+    {
+      "id": "sales1",
+      "label": "المبيعات · استقبال"
+    },
+    {
+      "id": "sales2",
+      "label": "المبيعات · عروض"
+    },
+    {
+      "id": "finance",
+      "label": "المالية"
+    },
+    {
+      "id": "sales3",
+      "label": "المبيعات · اعتماد"
+    },
+    {
+      "id": "stock1",
+      "label": "المستودع · حجز"
+    },
+    {
+      "id": "stock2",
+      "label": "المستودع · تجهيز"
+    },
+    {
+      "id": "log1",
+      "label": "التوزيع · سند"
+    },
+    {
+      "id": "log2",
+      "label": "التوزيع · رحلة"
+    },
+    {
+      "id": "ar1",
+      "label": "الذمم · تحصيل"
+    },
+    {
+      "id": "ar2",
+      "label": "الذمم · مطابقة"
+    }
+  ],
+  "phases": [
+    {
+      "id": "p0",
+      "label": "الطلب",
+      "fromCol": 0,
+      "toCol": 0
+    },
+    {
+      "id": "p1",
+      "label": "التسعير",
+      "fromCol": 1,
+      "toCol": 1
+    },
+    {
+      "id": "p2",
+      "label": "الاعتماد",
+      "fromCol": 2,
+      "toCol": 2
+    },
+    {
+      "id": "p3",
+      "label": "التجهيز",
+      "fromCol": 3,
+      "toCol": 3
+    },
+    {
+      "id": "p4",
+      "label": "التسليم",
+      "fromCol": 4,
+      "toCol": 4
+    },
+    {
+      "id": "p5",
+      "label": "الفوترة والتحصيل",
+      "fromCol": 5,
+      "toCol": 5
+    }
+  ],
+  "mainPath": [
+    "intake",
+    "customer",
+    "pricing",
+    "quote",
+    "credit",
+    "order",
+    "availability",
+    "pick",
+    "delivery",
+    "trip",
+    "invoice",
+    "collection",
+    "reconcile"
+  ],
+  "nodes": [
+    {
+      "id": "intake",
+      "lane": "sales1",
+      "col": 0,
+      "type": "frontend",
+      "label": "استلام طلب العميل",
+      "sublabel": "Communication / Opportunity",
+      "tag": "مقترح"
+    },
+    {
+      "id": "customer",
+      "lane": "sales2",
+      "col": 0,
+      "type": "frontend",
+      "label": "العميل وشروط التعامل",
+      "sublabel": "Customer",
+      "tag": "ERPNext"
+    },
+    {
+      "id": "pricing",
+      "lane": "sales1",
+      "col": 1,
+      "type": "frontend",
+      "label": "التسعير وفحص الأصناف",
+      "sublabel": "Item",
+      "tag": "ERPNext"
+    },
+    {
+      "id": "quote",
+      "lane": "sales2",
+      "col": 1,
+      "type": "frontend",
+      "label": "إصدار عرض السعر",
+      "sublabel": "Quotation",
+      "tag": "ERPNext"
+    },
+    {
+      "id": "credit",
+      "lane": "finance",
+      "col": 2,
+      "type": "security",
+      "label": "بوابة الذمم والائتمان",
+      "sublabel": "Customer Credit Limit",
+      "tag": "مشروط"
+    },
+    {
+      "id": "order",
+      "lane": "sales3",
+      "col": 2,
+      "type": "frontend",
+      "label": "اعتماد أمر البيع",
+      "sublabel": "Sales Order",
+      "tag": "ERPNext"
+    },
+    {
+      "id": "availability",
+      "lane": "stock1",
+      "col": 3,
+      "type": "database",
+      "label": "التحقق من المتاح والحجز",
+      "sublabel": "Bin",
+      "tag": "مشروط"
+    },
+    {
+      "id": "pick",
+      "lane": "stock2",
+      "col": 3,
+      "type": "database",
+      "label": "قائمة التجهيز والفحص",
+      "sublabel": "Pick List",
+      "tag": "ERPNext"
+    },
+    {
+      "id": "delivery",
+      "lane": "log1",
+      "col": 4,
+      "type": "messagebus",
+      "label": "سند التسليم",
+      "sublabel": "Delivery Note",
+      "tag": "مشروط"
+    },
+    {
+      "id": "trip",
+      "lane": "log2",
+      "col": 4,
+      "type": "messagebus",
+      "label": "رحلة التوزيع وإثبات الاستلام",
+      "sublabel": "Delivery Trip",
+      "tag": "مشروط"
+    },
+    {
+      "id": "invoice",
+      "lane": "finance",
+      "col": 5,
+      "type": "security",
+      "label": "إصدار فاتورة المبيعات",
+      "sublabel": "Sales Invoice",
+      "tag": "مشروط"
+    },
+    {
+      "id": "collection",
+      "lane": "ar1",
+      "col": 5,
+      "type": "security",
+      "label": "متابعة الذمم والتحصيل",
+      "sublabel": "Payment Entry",
+      "tag": "ERPNext"
+    },
+    {
+      "id": "reconcile",
+      "lane": "ar2",
+      "col": 5,
+      "type": "security",
+      "label": "المطابقة وإغلاق الدورة",
+      "sublabel": "Payment Reconciliation",
+      "tag": "ERPNext"
+    }
+  ],
+  "edges": [
+    {
+      "id": "intake-customer",
+      "from": "intake",
+      "to": "customer",
+      "label": "تدقيق العميل"
+    },
+    {
+      "id": "customer-pricing",
+      "from": "customer",
+      "to": "pricing",
+      "label": "طلب مكتمل"
+    },
+    {
+      "id": "pricing-quote",
+      "from": "pricing",
+      "to": "quote",
+      "label": "السعر"
+    },
+    {
+      "id": "quote-credit",
+      "from": "quote",
+      "to": "credit",
+      "label": "موافقة"
+    },
+    {
+      "id": "credit-order",
+      "from": "credit",
+      "to": "order",
+      "label": "أذن بيع"
+    },
+    {
+      "id": "order-availability",
+      "from": "order",
+      "to": "availability",
+      "label": "كميات"
+    },
+    {
+      "id": "availability-pick",
+      "from": "availability",
+      "to": "pick",
+      "label": "حجز/متاح"
+    },
+    {
+      "id": "pick-delivery",
+      "from": "pick",
+      "to": "delivery",
+      "label": "تجهيز"
+    },
+    {
+      "id": "delivery-trip",
+      "from": "delivery",
+      "to": "trip",
+      "label": "صرف"
+    },
+    {
+      "id": "trip-invoice",
+      "from": "trip",
+      "to": "invoice",
+      "label": "إثبات"
+    },
+    {
+      "id": "invoice-collection",
+      "from": "invoice",
+      "to": "collection",
+      "label": "استحقاق"
+    },
+    {
+      "id": "collection-reconcile",
+      "from": "collection",
+      "to": "reconcile",
+      "label": "مطابقة"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "دورة التشغيل",
+      "items": [
+        "كل سهم تسليم عمل مقترح، وليس أتمتة نشطة.",
+        "لا تُعتبر مسودة مستند حركة محاسبية أو مخزنية."
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "النواقص والبدائل",
+      "items": [
+        "لا بديل دون موافقة العميل والاحتفاظ بالسطر الأصلي.",
+        "التسليم الجزئي والمرتجع يحتاجان مستندات وتسويات منفصلة."
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "نطاق التحقق",
+      "items": [
+        "المصدر: Frappe Expert، بيانات ERPNext v16 المصدرية.",
+        "لم يُفحص موقع الشركة الفعلي ولم تنفّذ حالات UAT."
+      ]
+    }
+  ]
+}
